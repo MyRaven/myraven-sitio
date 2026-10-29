@@ -1,0 +1,17 @@
+/* Estética redondeada */
+:root{--r:22px}
+.btn,.pill,.tag,nav a.btn{border-radius:999px}
+.pill{border-radius:999px}
+.card{border-radius:var(--r)}
+.ph{border-bottom:0;margin:10px 10px 0;border-radius:calc(var(--r) - 6px);overflow:hidden}
+.gal-main{border-radius:calc(var(--r) + 6px);overflow:hidden}
+.thumb{border-radius:calc(var(--r) - 8px);overflow:hidden}
+.clave,.box,.rv,.fm .opt,.fm label.opt,.opt{border-radius:var(--r)}
+.clave{padding:16px 18px;border:1px solid var(--line);background:var(--card);max-width:480px}
+.fm input:not([type=checkbox]):not([type=radio]),.fm textarea,.fm select{border-radius:calc(var(--r) - 8px);padding-left:16px;padding-right:16px}
+.carac{border-radius:var(--r)}
+.hero{border-radius:0 0 calc(var(--r) + 10px) calc(var(--r) + 10px)}
+dialog,dialog.about,dialog.lb{border-radius:calc(var(--r) + 4px)}
+dialog.lb{border-radius:0}
+.toast{border-radius:var(--r)}
+.hp{display:none}
