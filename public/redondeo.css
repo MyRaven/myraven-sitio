@@ -13,5 +13,4 @@
 .hero{border-radius:0 0 calc(var(--r) + 10px) calc(var(--r) + 10px)}
 dialog,dialog.about,dialog.lb{border-radius:calc(var(--r) + 4px)}
 dialog.lb{border-radius:0}
-.toast{border-radius:var(--r)}
-.hp{display:none}
+#toast{border-radius:var(--r)}
