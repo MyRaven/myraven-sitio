@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyRaven – Periféricos gaming competitivo</title>
+<meta name="description" content="Mouses, mousepads y teclados para gaming competitivo. Stock real, retiro en Santiago Centro y entrega a domicilio.">
+<link rel="icon" href="logo.jpg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0A0B;--card:#141416;--line:#2A2A2E;--tx:#E8E8E8;--mu:#A8A8AE}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,sans-serif;line-height:1.5}
+a{color:var(--tx);text-decoration:none}a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.wrap{max-width:1280px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;padding-top:18px;padding-bottom:18px}
+.brand{display:flex;align-items:center;gap:14px;font:italic 900 26px Montserrat,sans-serif;letter-spacing:.01em}.brand-t{font:italic 900 24px Montserrat,sans-serif}
+.brand img{width:46px;height:46px;border-radius:50%;border:1px solid var(--line)}
+nav{align-items:center;display:flex;gap:28px;flex-wrap:wrap;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 22px;border:1px solid var(--tx);background:transparent;color:var(--tx);font:600 14px Inter,sans-serif;cursor:pointer;text-decoration:none}
+.btn:hover{text-decoration:none;background:#1c1c1f}
+.btn.fill{background:var(--tx);color:var(--bg)}.btn.fill:hover{background:#fff}
+header{border-bottom:1px solid var(--line)}
+html{scroll-behavior:smooth}
+.hero{position:relative;height:min(88vh,780px);display:flex;align-items:flex-end;justify-content:center;overflow:hidden;transition:height .9s cubic-bezier(.7,0,.2,1)}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%;transition:transform .9s cubic-bezier(.7,0,.2,1)}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,10,11,.95),rgba(10,10,11,0) 45%)}
+.hero .wrap{position:relative;z-index:1;padding-bottom:48px;transition:opacity .4s}
+.hero .acts{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.hero.collapsed{height:0;visibility:hidden;transition:height .9s cubic-bezier(.7,0,.2,1),visibility 0s .9s}
+.hero.collapsed img{transform:translateY(-14%)}
+.hero.collapsed .wrap{opacity:0}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero,.hero *{transition:none!important}}
+h2{margin:0;font:500 38px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.cat-h{padding-top:56px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+.cat-h span{color:var(--mu);font-size:14px}
+.filters{display:flex;gap:12px;flex-wrap:wrap;padding-top:20px}
+.pill{min-height:44px;padding:0 20px;border:1px solid var(--line);background:transparent;color:var(--tx);font:14px Inter,sans-serif;cursor:pointer}
+.pill[aria-pressed=true]{background:var(--tx);color:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:24px;padding-top:24px;padding-bottom:64px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:4px;overflow:hidden;display:flex;flex-direction:column}
+.ph{height:230px;background:#0F0F11;border-bottom:1px solid var(--line);position:relative;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:13px}
+.ph img{width:100%;height:100%;object-fit:contain;padding:14px;box-sizing:border-box;transition:transform .3s}
+.ph:hover img{animation:pulso-img 1.6s ease-in-out infinite}
+@keyframes pulso-img{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@media(prefers-reduced-motion:reduce){.ph:hover img{animation:none;transform:scale(1.03)}}
+.tag{position:absolute;top:14px;left:14px;border:1px solid var(--tx);padding:4px 10px;font-size:12px;background:var(--bg)}
+.bd{padding:20px;display:flex;flex-direction:column;gap:8px;flex:1}
+.nm{font:500 22px Inter,sans-serif;letter-spacing:.02em;margin:0}
+.sp{color:var(--mu);font-size:14px;margin:0;flex:1;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.pr{font:500 22px Inter,sans-serif}
+.card.out .ph img{opacity:.4}
+.info{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.info .wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:32px;padding-top:44px;padding-bottom:44px}
+.info h3{margin:0 0 8px;font:500 20px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.info p{margin:0;color:var(--mu);font-size:14px}
+footer .wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:32px;padding-top:48px;padding-bottom:24px;font-size:14px}
+footer .col{display:flex;flex-direction:column;gap:10px}
+footer small{display:block;color:var(--mu);padding:0 clamp(20px,4vw,48px) 32px;max-width:1280px;margin:0 auto}
+dialog{background:var(--card);color:var(--tx);border:1px solid var(--tx);padding:28px;max-width:440px;width:calc(100% - 32px)}
+dialog.about{max-width:780px;max-height:88vh;padding:0;border:1px solid var(--tx);background:linear-gradient(rgba(10,10,11,.8),rgba(10,10,11,.84)),url("quienes-somos.jpg") center/cover}
+.ab{padding:clamp(28px,6vw,56px);display:flex;flex-direction:column;gap:18px}
+.ab h2{margin:0}.ab p{margin:0;font-size:17px;color:var(--tx)}
+.ab .lead{font-size:22px;font-weight:500;line-height:1.4}
+.ab .sign{font:italic 900 28px Montserrat,sans-serif}.ab .x{align-self:flex-end}
+.fm{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.fm label{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--mu)}
+.fm input:not([type=checkbox]){min-height:44px;background:#0F0F11;border:1px solid var(--line);color:var(--tx);padding:0 12px;font:16px Inter,sans-serif}
+.fm .ck{flex-direction:row;gap:10px;align-items:flex-start}.hp{position:absolute;left:-9999px}
+#d-close{margin-top:14px;width:100%}
+dialog::backdrop{background:rgba(0,0,0,.8)}
+dialog h3{margin:0 0 4px;font:500 24px Inter,sans-serif}
+dialog .box{border:1px solid var(--line);padding:14px;margin:14px 0;font-size:14px;white-space:pre-line}
+dialog .acts{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.msg{padding:48px 0;color:var(--mu)}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <a class="brand" href="#"><img src="logo.jpg" alt="Logo MyRaven, un cuervo en vuelo">My Raven</a>
+  <nav><a href="#catalogo">Catálogo</a><a href="seguimiento.html">Seguimiento</a><a id="nav-cuenta" href="cuenta.html">Mi cuenta</a><a href="carrito.html" data-cart>Carrito</a></nav>
+</div></header>
+
+<section class="hero">
+  <img src="portada.jpg" alt="">
+  <div class="wrap"><div class="in">
+    <div class="acts"><a class="btn fill" id="ver-cat" href="#catalogo">Ver catálogo</a></div>
+  </div></div>
+</section>
+
+<main class="wrap" id="catalogo">
+  <div class="cat-h"><h2>Catálogo</h2><span>Disponibles primero</span></div>
+  <div class="filters" id="filters" role="group" aria-label="Filtrar por categoría"></div>
+  <div class="grid" id="grid" aria-live="polite"><p class="msg">Cargando catálogo…</p></div>
+</main>
+
+
+<footer id="contacto">
+  <div class="wrap">
+    <div class="col"><span class="brand-t">My Raven</span></div>
+    <div class="col"><a href="envios.html">Envíos</a><a href="seguimiento.html">Seguimiento de pedido</a><a href="cuenta.html">Mi cuenta</a><a href="#" id="about-open">Sobre nosotros</a><a id="nav-contact" href="#">Contacto</a><a href="privacidad.html">Política de privacidad</a></div>
+    <div class="col"><a id="ig" href="#">Instagram @_myraven</a><a id="ig-dm" href="#">Escríbenos por DM</a></div>
+  </div>
+  <small>© 2026 MyRaven. Todos los derechos reservados.</small>
+</footer>
+
+<dialog class="about" id="about"><div class="ab">
+  <button class="btn x" type="button" id="about-close">Cerrar</button>
+  <h2>Sobre nosotros</h2>
+  <p class="lead">Más que venderte algo, buscamos que lo disfrutes al máximo.</p>
+  <p>Somos dos amigos apasionados por el mundo de los <strong>videojuegos</strong>. Disfrutamos lo que hacemos, y es por eso que creamos <strong>My Raven</strong>. Queremos marcar la diferencia frente a los grandes distribuidores, ofreciéndote esa calidad que pocos dan: atención real, carácter, satisfacción y, sobre todo, entendiendo qué necesitas para tu setup.</p>
+  <p>Sabemos que si estás aquí es porque buscas rendimiento para tus partidas más exigentes o comodidad para tus tareas del día a día. Por eso, ofrecemos un stock variado adaptado a distintos tipos de personalidades, estilos de juego y ergonomías.</p>
+  <p>Nos comprometemos a darte asesoría personalizada para que te lleves el periférico ideal para ti. Tu experiencia final es lo que más nos importa.</p>
+  <p>¡Gracias por formar parte de nuestra comunidad!</p>
+  <p class="sign">— My Raven</p>
+</div></dialog>
+
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+let items = [], filtro = "Todo";
+
+async function cargar(){
+  try{ items = await cargarProductos(); }
+  catch(e){ items=[]; $("grid").innerHTML='<p class="msg">No pudimos cargar el catálogo. Escríbenos por Instagram y te enviamos las opciones disponibles.</p>'; return; }
+  pintar();
+}
+
+function pintar(){
+  const cats=["Todo",...new Set(items.map(p=>p.categoria).filter(Boolean))];
+  $("filters").replaceChildren(...cats.map(c=>{const b=el("button",{class:"pill",type:"button","aria-pressed":String(c===filtro)},c); b.dataset.c=c; return b;}));
+  const lista=items.filter(p=>filtro==="Todo"||p.categoria===filtro);
+  $("grid").replaceChildren();
+  if(!lista.length){ $("grid").append(el("p",{class:"msg"},"No hay productos en esta categoría por ahora.")); return; }
+  lista.forEach(p=>{
+    const url = p.agotado ? CONFIG.INSTAGRAM_DM : "producto.html?p="+encodeURIComponent(p.id);
+    const ph=el("div",{class:"ph"});
+    if(p.fotos[0]) ph.append(el("img",{loading:"lazy",alt:p.nombre,src:p.fotos[0]})); else ph.append("Foto próximamente");
+    ph.append(el("span",{class:"tag"},p.estado||"Disponible"));
+    const card=el("article",{class:"card"+(p.agotado?" out":"")},ph,
+      el("div",{class:"bd"},
+        el("h3",{class:"nm"},el("a",{href:url,target:"_blank",rel:"noopener"},p.nombre)),
+        el("div",{class:"row"},el("span",{class:"pr"},clp(p.precio)||"Consultar precio"))));
+    card.style.cursor="pointer";
+    card.addEventListener("click",e=>{ if(e.target.closest("a")) return; window.open(url,"_blank","noopener"); });
+    $("grid").append(card);
+  });
+}
+
+$("filters").addEventListener("click",e=>{const c=e.target.dataset.c; if(c){filtro=c;pintar()}});
+$("ig").href=CONFIG.INSTAGRAM;
+["ig-dm","nav-contact"].forEach(i=>{$(i).href=CONFIG.INSTAGRAM_DM;$(i).target="_blank";$(i).rel="noopener"});
+$("about-open").onclick=e=>{e.preventDefault();$("about").showModal();};
+$("about-close").onclick=()=>$("about").close();
+$("about").addEventListener("click",e=>{if(e.target===$("about"))$("about").close()});
+const hero=document.querySelector(".hero");
+$("ver-cat").addEventListener("click",e=>{e.preventDefault();hero.classList.add("collapsed")});
+document.querySelector(".brand").addEventListener("click",e=>{e.preventDefault();hero.classList.remove("collapsed");window.scrollTo({top:0,behavior:"smooth"})});
+{ const s=getSes(); if(s) $("nav-cuenta").textContent="Hola, "+(s.nombre||"").split(" ")[0]; }
+actualizarBadge();
+cargar();
+</script>
+</body>
+</html>

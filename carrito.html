@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu pedido – MyRaven</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo.jpg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header id="hdr"></header>
+
+<main class="wrap">
+  <h1 id="ttl">Tu pedido</h1>
+  <div id="vista" style="margin-top:24px"><p class="msg">Cargando…</p></div>
+</main>
+
+<footer id="ftr"></footer>
+
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+const Q = new URLSearchParams(location.search);
+const DIRECTO = Q.get("directo");
+let lines = [], step = 1;
+const D = {nombre:"",rut:"",telefono:"",email:"",tipo:"retiro",comuna:"",direccion:"",ref:"",pago:"Transferencia",web:""};
+
+function persistir(){ if(!DIRECTO) saveCart(lines); }
+function envioActual(){ return D.tipo==="domicilio" ? (D.comuna ? costoEnvio(D.comuna) : null) : 0; }
+function totales(){
+  const sub=lines.reduce((a,l)=>a+l.precio*l.qty,0), sin=lines.some(l=>!l.precio), env=envioActual();
+  return {sub,sin,env,total:sub+(env||0)};
+}
+function mpDisponible(){
+  if(!CONFIG.MERCADOPAGO||!CONFIG.ORDERS_URL) return "Próximamente. Por ahora paga por transferencia.";
+  const T=totales();
+  if(T.sin||(D.tipo==="domicilio"&&T.env==null)) return "Disponible cuando el total del pedido esté definido.";
+  return "";
+}
+
+async function init(){
+  montarCabecera(); montarPie();
+  const s=getSes(); if(s){ D.nombre=s.nombre||""; D.telefono=s.telefono||""; D.email=s.email||""; }
+  let prods=[]; try{ prods=await cargarProductos(); }catch(e){ prods=null; }
+  const avisos=[];
+  const base = DIRECTO ? [{id:DIRECTO,qty:1}] : getCart();
+  if(prods){
+    base.forEach(b=>{
+      const p=prods.find(x=>x.id===b.id);
+      if(!p||p.agotado){ avisos.push((b.nombre||b.id)+" ya no está disponible y se quitó."); return; }
+      lines.push({id:p.id,nombre:p.nombre,precio:num(p.precio),qty:Math.max(1,Math.min(10,b.qty||1)),foto:p.fotos[0]||"",link_pago:p.link_pago});
+    });
+  } else lines = DIRECTO ? [] : base;
+  persistir();
+  pintar(avisos);
+}
+
+function pintar(avisos){
+  const v=$("vista"); v.replaceChildren();
+  if(!lines.length){
+    v.append(...(avisos||[]).map(a=>el("p",{class:"mu"},a)),
+      el("p",{class:"msg"},"Tu carrito está vacío. ",el("a",{href:"index.html#catalogo"},"Ver el catálogo")));
+    return;
+  }
+  const izq=el("div",{id:"izq"}), der=el("div",{id:"der"});
+  (avisos||[]).forEach(a=>izq.append(el("p",{class:"mu"},a)));
+  v.append(el("div",{class:"cart-g"},izq,der));
+  pintarIzq(); pintarPaso();
+}
+
+/* ---------- Resumen (izquierda) ---------- */
+function pintarIzq(){
+  const izq=$("izq"); [...izq.querySelectorAll(".line,.tots,.back")].forEach(n=>n.remove());
+  lines.forEach((l,i)=>{
+    const im=el("div",{class:"im"}); if(l.foto) im.append(el("img",{src:l.foto,alt:""})); else im.textContent="Sin foto";
+    izq.append(el("div",{class:"line"},im,
+      el("div",{},el("a",{href:"producto.html?p="+encodeURIComponent(l.id)},el("b",{},l.nombre)),
+        el("div",{class:"qty"},
+          el("button",{type:"button","aria-label":"Quitar una unidad",onclick:()=>cambiar(i,-1)},"−"),
+          el("span",{"aria-live":"polite"},String(l.qty)),
+          el("button",{type:"button","aria-label":"Agregar una unidad",onclick:()=>cambiar(i,1)},"+")),
+        el("button",{class:"rm",type:"button",onclick:()=>{lines.splice(i,1);persistir();lines.length?(pintarIzq(),pintarPaso()):pintar()}},"Quitar")),
+      el("div",{},l.precio?clp(l.precio*l.qty):"A confirmar")));
+  });
+  const T=totales();
+  const fila=(a,b,cls)=>el("div",{class:"tr "+(cls||"")},el("span",{},a),el("span",{},b));
+  izq.append(el("div",{class:"tots"},
+    fila("Productos",T.sin&&!T.sub?"A confirmar":clp(T.sub)+(T.sin?" + por confirmar":"")),
+    fila("Envío",D.tipo==="retiro"?"Gratis (retiro en el local)":T.env==null?"Elige tu comuna":clp(T.env)),
+    fila("Total",T.sin&&!T.sub?"A confirmar":(T.env==null?"":clp(T.total))+(T.sin&&T.sub?" + por confirmar":""),"big")));
+  izq.append(el("a",{href:"index.html#catalogo",class:"mu back"},"← Seguir mirando productos"));
+}
+function cambiar(i,d){ lines[i].qty=Math.max(1,Math.min(10,lines[i].qty+d)); persistir(); pintarIzq(); pintarPaso(); }
+
+/* ---------- Pasos (derecha) ---------- */
+function stepper(){
+  const ol=el("ol",{class:"stp","aria-label":"Pasos del pedido"});
+  ["Tus datos","Entrega","Pago"].forEach((n,i)=>ol.append(el("li",{class:(i+1<step?"done":"")+(i+1===step?" now":""),"aria-current":i+1===step?"step":null},el("b",{},String(i+1)),n)));
+  return ol;
+}
+function pintarPaso(){
+  const der=$("der"); der.replaceChildren(stepper(), step===1?paso1():step===2?paso2():paso3());
+}
+const inp=(name,label,attrs)=>{
+  const i=el("input",Object.assign({name,required:"",value:D[name]||""},attrs));
+  i.addEventListener("input",()=>{D[name]=i.value; i.setCustomValidity("")});
+  return [el("label",{},label,i),i];
+};
+
+function paso1(){
+  const f=el("form",{class:"fm"});
+  const [lN]=inp("nombre","Nombre y apellido",{maxlength:"80",autocomplete:"name"});
+  const [lR,iR]=inp("rut","RUT",{maxlength:"12",placeholder:"12.345.678-5",autocomplete:"off",inputmode:"text"});
+  iR.addEventListener("blur",()=>{ if(iR.value){ iR.value=formatRut(iR.value); D.rut=iR.value; } });
+  const [lT]=inp("telefono","Número de teléfono (WhatsApp)",{type:"tel",maxlength:"20",autocomplete:"tel",placeholder:"+56 9 1234 5678"});
+  const [lE]=inp("email","Correo electrónico",{type:"email",maxlength:"120",autocomplete:"email"});
+  f.append(el("h2",{style:"margin:0"},"1. Tus datos"));
+  if(!getSes()) f.append(el("p",{class:"mu",style:"margin:0;font-size:14px"},"¿Ya tienes cuenta? ",el("a",{href:"cuenta.html?volver=carrito"},"Inicia sesión")," para completar tus datos automáticamente."));
+  f.append(lN,lR,lT,lE,
+    el("input",{class:"hp",name:"web",tabindex:"-1",autocomplete:"off","aria-hidden":"true",oninput:e=>{D.web=e.target.value}}),
+    el("button",{class:"btn fill",type:"submit"},"Continuar a la entrega"));
+  f.addEventListener("submit",e=>{
+    e.preventDefault();
+    if(!rutOk(D.rut)){ iR.setCustomValidity("Ingresa un RUT válido, por ejemplo 12.345.678-5"); iR.reportValidity(); return; }
+    D.rut=formatRut(D.rut); step=2; pintarPaso(); window.scrollTo({top:0,behavior:"smooth"});
+  });
+  return f;
+}
+
+function paso2(){
+  const f=el("form",{class:"fm"});
+  f.append(el("h2",{style:"margin:0"},"2. Método de entrega"));
+  const opcion=(val,titulo,detalle)=>{
+    const r=el("input",{type:"radio",name:"tipo",value:val,id:"t-"+val}); r.checked=D.tipo===val;
+    r.addEventListener("change",()=>{D.tipo=val; pintarIzq(); pintarPaso();});
+    return el("label",{class:"opt"+(D.tipo===val?" sel":""),for:"t-"+val},r,el("span",{},el("b",{},titulo),el("small",{},detalle)));
+  };
+  f.append(el("fieldset",{class:"opts"},el("legend",{class:"mu"},"¿Cómo quieres recibir tu pedido?"),
+    opcion("retiro","Retiro en el local · Gratis",CONFIG.LOCAL),
+    opcion("domicilio","Entrega a domicilio · $5.000 CLP a $7.500 CLP","El valor depende de la distancia desde nuestro local hasta tu comuna.")));
+  if(D.tipo==="retiro"){
+    f.append(el("p",{class:"mu",style:"margin:0;font-size:14px"},"Cuando confirmemos tu pago te escribimos por WhatsApp para coordinar el día y la hora de retiro."));
+  } else {
+    const sel=el("select",{name:"comuna",required:""});
+    sel.append(el("option",{value:""},"Elige tu comuna"));
+    COMUNAS().forEach(c=>sel.append(el("option",{value:c.comuna},c.comuna+" — "+clp(c.precio))));
+    sel.append(el("option",{value:"__otra"},"Otra comuna — "+clp(CONFIG.OTRA_COMUNA)+" (te confirmamos el valor)"));
+    sel.value=D.comuna; sel.addEventListener("change",()=>{D.comuna=sel.value;pintarIzq();pintarPaso();});
+    const [lD]=inp("direccion","Calle y número",{maxlength:"120",autocomplete:"street-address"});
+    const iR=el("input",{name:"ref",maxlength:"120",value:D.ref,placeholder:"Depto, casa, portería, indicaciones"}); iR.addEventListener("input",()=>{D.ref=iR.value});
+    f.append(el("label",{},"Comuna",sel),lD,el("label",{},"Depto / referencias (opcional)",iR));
+    const e=envioActual();
+    f.append(el("p",{class:"mu",style:"margin:0;font-size:14px"},e==null?"Elige tu comuna para ver el valor del envío.":"Valor del envío: "+clp(e)+(D.comuna==="__otra"?" (lo confirmamos por WhatsApp)":"")+". Coordinamos el horario por WhatsApp una vez confirmado el pago."));
+  }
+  const acts=el("div",{class:"btns"},
+    el("button",{class:"btn",type:"button",onclick:()=>{step=1;pintarPaso()}},"Atrás"),
+    el("button",{class:"btn fill",type:"submit"},"Continuar al pago"));
+  f.append(acts);
+  f.addEventListener("submit",e=>{ e.preventDefault(); step=3; pintarPaso(); window.scrollTo({top:0,behavior:"smooth"}); });
+  return f;
+}
+
+function paso3(){
+  const f=el("form",{class:"fm"});
+  const razon=mpDisponible();
+  if(razon && D.pago==="Mercado Pago") D.pago="Transferencia";
+  f.append(el("h2",{style:"margin:0"},"3. Pago"));
+  const op=(val,titulo,detalle,off)=>{
+    const r=el("input",{type:"radio",name:"pago",value:val,id:"p-"+val.replace(/\s/g,"")}); r.checked=D.pago===val; if(off) r.disabled=true;
+    r.addEventListener("change",()=>{D.pago=val;pintarPaso()});
+    return el("label",{class:"opt"+(D.pago===val?" sel":"")+(off?" off":""),for:r.id},r,el("span",{},el("b",{},titulo),el("small",{},detalle)));
+  };
+  f.append(el("fieldset",{class:"opts"},el("legend",{class:"mu"},"¿Cómo quieres pagar?"),
+    op("Transferencia","Transferencia bancaria","Te mostramos los datos al confirmar el pedido."),
+    op("Mercado Pago","Mercado Pago",razon||"Te mostramos un link de pago de Mercado Pago por "+clp(totales().total)+" (monto exacto de tu pedido).",!!razon)));
+  const T=totales();
+  const ent = D.tipo==="retiro" ? "Retiro en el local" : "Domicilio: "+D.direccion+(D.ref?" ("+D.ref+")":"")+", "+(D.comuna==="__otra"?"otra comuna":D.comuna);
+  f.append(el("div",{class:"box"},"Resumen\n"+lines.map(l=>l.qty+" × "+l.nombre).join("\n")+"\n\nCliente: "+D.nombre+" · "+D.rut+"\nContacto: "+D.telefono+" · "+D.email+"\nEntrega: "+ent+"\nTotal: "+(T.sin&&!T.sub?"A confirmar":clp(T.total)+(T.sin?" + por confirmar":""))));
+  f.append(el("label",{class:"ck"},el("input",{type:"checkbox",required:""}),el("span",{},"Acepto el tratamiento de mis datos según la ",el("a",{href:"privacidad.html",target:"_blank"},"política de privacidad"),".")));
+  f.append(el("div",{class:"btns"},
+    el("button",{class:"btn",type:"button",onclick:()=>{step=2;pintarPaso()}},"Atrás"),
+    el("button",{class:"btn fill",type:"submit",id:"ped-s"},"Confirmar pedido")),
+    el("p",{class:"err",id:"ped-e",role:"alert"}));
+  f.addEventListener("submit",enviar);
+  return f;
+}
+
+async function enviar(e){
+  e.preventDefault(); if(D.web) return;
+  $("ped-s").disabled=true; $("ped-e").textContent="Enviando…";
+  const s=getSes(), T=totales();
+  const d={items:lines.map(l=>({id:l.id,nombre:l.nombre,qty:l.qty,precio:l.precio})),nombre:D.nombre.trim(),rut:D.rut,telefono:D.telefono.trim(),email:D.email.trim(),
+    entrega:{tipo:D.tipo,comuna:D.comuna==="__otra"?"Otra comuna":D.comuna,direccion:D.direccion.trim(),ref:D.ref.trim()},pago:D.pago,token:s?s.token:"",web:D.web};
+  let codigo="MR-PRUEBA", total=T.total, pagoUrl="";
+  if(CONFIG.ORDERS_URL){
+    const j=await api("pedido",d);
+    if(!j.ok){ $("ped-e").textContent=j.error==="sesion"?msgError(j):"No pudimos registrar tu pedido. Intenta de nuevo o escríbenos por Instagram."; $("ped-s").disabled=false; if(j.error==="sesion") clearSes(); return; }
+    codigo=j.codigo; pagoUrl=j.pagoUrl||""; if(typeof j.total==="number") total=j.total;
+  }
+  const resumen={codigo,total,sin:T.sin&&!T.sub,envio:T.env||0,mp:pagoUrl,entrega:d.entrega,pago:D.pago};
+  if(!DIRECTO) saveCart([]);
+  resultado(resumen);
+}
+
+function resultado(r){
+  $("ttl").textContent="¡Pedido recibido!";
+  const v=$("vista"); v.replaceChildren();
+  const ent = r.entrega.tipo==="retiro" ? "Retiro en el local:\n"+CONFIG.LOCAL : "Entrega a domicilio:\n"+r.entrega.direccion+(r.entrega.ref?" ("+r.entrega.ref+")":"")+", "+r.entrega.comuna+"\nEnvío: "+clp(r.envio);
+  const acts=el("div",{class:"acts"});
+  const nodo=el("div",{class:"narrow"},
+    el("div",{class:"box"},"Pedido "+r.codigo+(CONFIG.ORDERS_URL?"":" (modo prueba: no se guardó)")+"\nTotal a pagar: "+(r.sin?"A confirmar":clp(r.total))+"\n\n"+ent));
+  if(r.pago==="Mercado Pago" && r.mp){
+    nodo.append(el("p",{class:"mu"},"Paga ahora con Mercado Pago: el link ya trae el monto exacto de tu pedido ("+clp(r.total)+"). Tu pedido queda pendiente hasta que confirmemos el pago."));
+    acts.append(el("a",{class:"btn fill",href:r.mp,target:"_blank",rel:"noopener"},"Pagar con Mercado Pago"));
+  } else if(r.pago==="Mercado Pago"){
+    nodo.append(el("p",{class:"mu"},"No pudimos generar tu link de Mercado Pago en este momento. Te lo enviaremos por WhatsApp con el monto exacto, o puedes pagar por transferencia:"),
+      el("div",{class:"box"},CONFIG.TRANSFERENCIA+"\n\nEn el comentario de la transferencia escribe: "+r.codigo));
+  } else {
+    nodo.append(el("p",{class:"mu"},"Para pagar, haz una transferencia con estos datos:"),
+      el("div",{class:"box"},CONFIG.TRANSFERENCIA+"\n\nEn el comentario de la transferencia escribe: "+r.codigo));
+  }
+  acts.append(el("a",{class:"btn"+(r.pago==="Mercado Pago"&&r.mp?"":" fill"),href:"seguimiento.html?codigo="+encodeURIComponent(r.codigo)},"Seguir mi pedido"),
+    el("a",{class:"btn",href:CONFIG.INSTAGRAM_DM,target:"_blank",rel:"noopener"},"Tengo una consulta por Instagram"));
+  nodo.append(acts,el("p",{class:"mu",style:"font-size:14px;margin-top:18px"},"Guarda tu código "+r.codigo+": con él y tu teléfono puedes ver el estado de tu pedido en Seguimiento. Cuando confirmemos tu pago te escribiremos por WhatsApp."));
+  v.append(nodo);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+init();
+</script>
+</body>
+</html>

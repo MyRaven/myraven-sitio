@@ -1,0 +1,12 @@
+*{box-sizing:border-box}
+body{margin:0;background:#0A0A0B;color:#E8E8E8;font:16px/1.65 Inter,sans-serif}
+a{color:#E8E8E8}:focus-visible{outline:2px solid #fff;outline-offset:3px}
+header{border-bottom:1px solid #2A2A2E}
+.top{max-width:1280px;margin:0 auto;padding:18px clamp(20px,4vw,48px);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.brand{display:flex;align-items:center;gap:14px;font:italic 900 26px Montserrat,sans-serif;letter-spacing:.01em;text-decoration:none}
+.brand img{width:46px;height:46px;border-radius:50%;border:1px solid #2A2A2E}
+main{max-width:760px;margin:0 auto;padding:56px clamp(20px,4vw,48px) 72px}
+h1{margin:0 0 8px;font-weight:500;font-size:38px;letter-spacing:.04em;text-transform:uppercase;line-height:1.2}
+h2{margin:40px 0 8px;font-weight:500;font-size:22px;letter-spacing:.02em}
+p,li{color:#C9C9CE}ul{padding-left:22px}.mu{color:#A8A8AE;font-size:14px}
+footer{border-top:1px solid #2A2A2E;padding:28px clamp(20px,4vw,48px);display:flex;gap:24px;flex-wrap:wrap;font-size:14px;max-width:1280px;margin:0 auto}

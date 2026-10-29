@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seguimiento de pedido – MyRaven</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo.jpg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header id="hdr"></header>
+
+<main class="wrap">
+  <h1>Seguimiento de pedido</h1>
+  <div class="narrow" style="margin-top:24px">
+    <p class="mu">Ingresa el código que recibiste al confirmar tu pedido (por ejemplo MR-0001) y el teléfono con el que lo hiciste.</p>
+    <form class="fm" id="f">
+      <label>Código de pedido<input name="codigo" required maxlength="12" placeholder="MR-0001" autocapitalize="characters"></label>
+      <label>Teléfono<input name="telefono" type="tel" required maxlength="20" autocomplete="tel" placeholder="+56 9 1234 5678"></label>
+      <button class="btn fill" type="submit" id="b">Ver estado</button>
+      <p class="err" id="e" role="alert"></p>
+    </form>
+    <div id="res"></div>
+  </div>
+</main>
+
+<footer id="ftr"></footer>
+
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script>
+montarCabecera(); montarPie();
+const PASOS=["Pendiente de pago","Pagado","Enviado","Entregado"];
+const DESC={"Pendiente de pago":"Esperamos tu transferencia o pago.","Pagado":"Recibimos tu pago. Preparamos tu pedido.","Enviado":"Tu pedido va en camino o listo para coordinar la entrega.","Entregado":"Pedido entregado. ¡Gracias por comprar en My Raven!","Cancelado":"Este pedido fue cancelado."};
+const f=$("f"), s=getSes();
+const c0=new URLSearchParams(location.search).get("codigo"); if(c0) f.codigo.value=c0.slice(0,12);
+if(s&&s.telefono) f.telefono.value=s.telefono;
+
+f.addEventListener("submit",async e=>{
+  e.preventDefault(); $("b").disabled=true; $("e").textContent="Buscando…"; $("res").replaceChildren();
+  const j=await api("seguimiento",{codigo:f.codigo.value.trim().toUpperCase(),telefono:f.telefono.value.trim()});
+  $("b").disabled=false;
+  if(!j.ok){ $("e").textContent=msgError(j); return; }
+  $("e").textContent="";
+  const r=$("res"), p=j.pedido;
+  const box=el("div",{class:"box",style:"margin-top:22px"},"Pedido "+p.codigo+"\n"+p.producto+"\nTotal: "+p.total+"\nFecha: "+p.fecha);
+  r.append(box);
+  if(p.estado==="Cancelado"){ r.append(el("p",{class:"err"},DESC.Cancelado)); }
+  else{
+    const i=PASOS.indexOf(p.estado), steps=el("div",{class:"steps"});
+    PASOS.forEach((n,k)=>steps.append(el("div",{class:"st "+(k<i?"done":k===i?"now":"")},el("i",{}),el("span",{},n+(k===i?" — "+DESC[n]:"")))));
+    r.append(steps);
+  }
+  r.append(el("p",{class:"mu",style:"font-size:14px"},"¿Dudas con tu pedido? Escríbenos por ",el("a",{href:CONFIG.INSTAGRAM_DM,target:"_blank",rel:"noopener"},"Instagram"),"."));
+});
+</script>
+</body>
+</html>
