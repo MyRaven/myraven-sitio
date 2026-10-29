@@ -126,7 +126,7 @@ function formResena(){
   const ses=getSes();
   const f=el("form",{class:"fm"});
   f.append(el("h3",{style:"margin:0;font:500 18px Inter,sans-serif"},"Deja tu reseña"));
-  f.append(el("label",{},"Nombre (se mostrará públicamente)",el("input",{name:"nombre",required:"",maxlength:"40",autocomplete:"nickname",value:ses?((ses.nombre||"").split(" ")[0]):""})));
+  f.append(el("label",{},"Nombre",el("input",{name:"nombre",required:"",maxlength:"40",autocomplete:"nickname",value:ses?((ses.nombre||"").split(" ")[0]):""})));
   const fs=el("fieldset",{class:"starin"},el("legend",{},"Calificación"));
   for(let i=1;i<=5;i++){ fs.append(el("input",{type:"radio",name:"estrellas",value:String(i),id:"s"+i,required:""}),el("label",{for:"s"+i,"aria-label":i+(i===1?" estrella":" estrellas")},"★")); }
   const pintar=v=>[...fs.querySelectorAll("label")].forEach((l,k)=>l.classList.toggle("on",k<v));
