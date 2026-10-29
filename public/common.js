@@ -134,3 +134,11 @@ function toast(msg, linkText, href){
   t.replaceChildren(msg+" ", linkText?el("a",{href},linkText):"");
   t.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove("on"),5000);
 }
+
+/* Pulso: uno hacia afuera al entrar el mouse y uno hacia adentro al salir */
+document.addEventListener("mouseout",e=>{
+  const t=e.target.closest&&e.target.closest(".pulse"); if(!t||t.contains(e.relatedTarget)) return;
+  t.classList.remove("sale"); void t.offsetWidth; t.classList.add("sale");
+  t.addEventListener("animationend",()=>t.classList.remove("sale"),{once:true});
+});
+document.addEventListener("mouseover",e=>{ const t=e.target.closest&&e.target.closest(".pulse"); if(t) t.classList.remove("sale"); });
