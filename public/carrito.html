@@ -197,7 +197,7 @@ async function enviar(e){
   let codigo="MR-PRUEBA", total=T.total, pagoUrl="";
   if(CONFIG.ORDERS_URL){
     const j=await api("pedido",d);
-    if(!j.ok){ $("ped-e").textContent=j.error==="sesion"?msgError(j):"No pudimos registrar tu pedido. Intenta de nuevo o escríbenos por Instagram."; $("ped-s").disabled=false; if(j.error==="sesion") clearSes(); return; }
+    if(!j.ok){ $("ped-e").textContent=j.error==="sesion"?msgError(j):j.error==="red"?msgError(j):j.error==="datos"?"No pudimos validar tu pedido. Revisa tus datos (RUT, teléfono y correo) e intenta de nuevo en un minuto. Si sigue igual, escríbenos por Instagram.":"No pudimos registrar tu pedido. Intenta de nuevo o escríbenos por Instagram."; $("ped-e").scrollIntoView({behavior:"smooth",block:"center"}); $("ped-s").disabled=false; if(j.error==="sesion") clearSes(); return; }
     codigo=j.codigo; pagoUrl=j.pagoUrl||""; if(typeof j.total==="number") total=j.total;
   }
   const resumen={codigo,total,sin:T.sin&&!T.sub,envio:T.env||0,mp:pagoUrl,entrega:d.entrega,pago:D.pago};
