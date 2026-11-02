@@ -16,10 +16,9 @@
 <main class="wrap">
   <h1>Seguimiento de pedido</h1>
   <div class="narrow" style="margin-top:24px">
-    <p class="mu">Ingresa el código que recibiste al confirmar tu pedido (por ejemplo MR-0001) y el teléfono con el que lo hiciste.</p>
+    <p class="mu">Ingresa el código que recibiste al confirmar tu pedido (por ejemplo MR-0001).</p>
     <form class="fm" id="f">
       <label>Código de pedido<input name="codigo" required maxlength="12" placeholder="MR-0001" autocapitalize="characters"></label>
-      <label>Teléfono<input name="telefono" type="tel" required maxlength="20" autocomplete="tel" placeholder="+56 9 1234 5678"></label>
       <button class="btn fill" type="submit" id="b">Ver estado</button>
       <p class="err" id="e" role="alert"></p>
     </form>
@@ -37,11 +36,10 @@ const PASOS=["Pendiente de pago","Pagado","Enviado","Entregado"];
 const DESC={"Pendiente de pago":"Esperamos tu transferencia o pago.","Pagado":"Recibimos tu pago. Preparamos tu pedido.","Enviado":"Tu pedido va en camino o listo para coordinar la entrega.","Entregado":"Pedido entregado. ¡Gracias por comprar en My Raven!","Cancelado":"Este pedido fue cancelado."};
 const f=$("f"), s=getSes();
 const c0=new URLSearchParams(location.search).get("codigo"); if(c0) f.codigo.value=c0.slice(0,12);
-if(s&&s.telefono) f.telefono.value=s.telefono;
 
 f.addEventListener("submit",async e=>{
   e.preventDefault(); $("b").disabled=true; $("e").textContent="Buscando…"; $("res").replaceChildren();
-  const j=await api("seguimiento",{codigo:f.codigo.value.trim().toUpperCase(),telefono:f.telefono.value.trim()});
+  const j=await api("seguimiento",{codigo:f.codigo.value.trim().toUpperCase()});
   $("b").disabled=false;
   if(!j.ok){ $("e").textContent=msgError(j); return; }
   $("e").textContent="";

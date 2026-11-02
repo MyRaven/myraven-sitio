@@ -83,7 +83,7 @@ const ERRORES = {
   red:"No pudimos conectar. Revisa tu internet e intenta de nuevo.",
   datos:"Revisa los datos ingresados.", existe:"No se pudo crear la cuenta. Si ya tienes una, inicia sesión.",
   credenciales:"Correo o contraseña incorrectos.", bloqueado:"Demasiados intentos. Espera unos minutos e intenta de nuevo.",
-  sesion:"Tu sesión expiró. Vuelve a iniciar sesión.", no_encontrado:"No encontramos un pedido con esos datos.",
+  sesion:"Tu sesión expiró. Vuelve a iniciar sesión.", no_encontrado:"No encontramos un pedido con ese código.",
   limite:"Has enviado muchas solicitudes. Intenta más tarde.", clave_corta:"La contraseña debe tener al menos 8 caracteres."
 };
 const msgError = j => ERRORES[(j&&j.error)||"red"] || "Ocurrió un error. Intenta de nuevo.";
