@@ -135,13 +135,13 @@ function formResena(){
   fs.querySelectorAll("label").forEach((l,k)=>{l.addEventListener("mouseenter",()=>pintar(k+1));l.addEventListener("mouseleave",()=>pintar(+(f.estrellas.value||0)))});
   f.append(fs,
     el("label",{},"Comentario",el("textarea",{name:"comentario",required:"",maxlength:"600",placeholder:"Cuéntanos qué te pareció el producto"})),
-    el("input",{class:"hp",name:"web",tabindex:"-1",autocomplete:"off","aria-hidden":"true"}),
+    el("input",{class:"hp",name:"hp_trampa",tabindex:"-1",autocomplete:"off","data-lpignore":"true","data-1p-ignore":"true","aria-hidden":"true"}),
     el("button",{class:"btn fill",type:"submit",id:"rv-s"},"Enviar reseña"),
     el("p",{class:"err",id:"rv-e",role:"alert"}));
   f.addEventListener("submit",async e=>{
-    e.preventDefault(); if(f.web.value) return;
+    e.preventDefault(); if(f.hp_trampa.value) return;
     $("rv-s").disabled=true; $("rv-e").className="err"; $("rv-e").textContent="Enviando…";
-    const j=await api("resena",{producto:P.id,nombre:f.nombre.value.trim(),estrellas:+f.estrellas.value,comentario:f.comentario.value.trim(),web:f.web.value});
+    const j=await api("resena",{producto:P.id,nombre:f.nombre.value.trim(),estrellas:+f.estrellas.value,comentario:f.comentario.value.trim(),web:f.hp_trampa.value});
     if(j.ok){ $("rv").replaceChildren(); cargarResenas(); return; }
     else { $("rv-e").textContent=msgError(j); }
     $("rv-s").disabled=false;

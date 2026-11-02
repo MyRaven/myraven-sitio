@@ -80,14 +80,14 @@ function formRegistro(){
     el("label",{},"Teléfono (WhatsApp)",el("input",{name:"telefono",type:"tel",required:"",maxlength:"20",autocomplete:"tel",placeholder:"+56 9 1234 5678"})),
     el("label",{},"Correo",el("input",{name:"email",type:"email",required:"",maxlength:"120",autocomplete:"email"})),
     el("label",{},"Contraseña (mínimo 8 caracteres)",el("input",{name:"clave",type:"password",required:"",minlength:"8",maxlength:"100",autocomplete:"new-password"})),
-    el("input",{class:"hp",name:"web",tabindex:"-1",autocomplete:"off","aria-hidden":"true"}),
+    el("input",{class:"hp",name:"hp_trampa",tabindex:"-1",autocomplete:"off","data-lpignore":"true","data-1p-ignore":"true","aria-hidden":"true"}),
     el("label",{class:"ck"},el("input",{type:"checkbox",required:""}),el("span",{},"Acepto el tratamiento de mis datos según la ",el("a",{href:"privacidad.html",target:"_blank"},"política de privacidad"),".")),
     el("button",{class:"btn fill",type:"submit"},"Crear cuenta"),
     el("p",{class:"err",role:"alert"}));
   f.addEventListener("submit",async e=>{
-    e.preventDefault(); if(f.web.value) return;
+    e.preventDefault(); if(f.hp_trampa.value) return;
     const er=f.querySelector(".err"), b=f.querySelector("button"); b.disabled=true; er.textContent="Creando cuenta…";
-    const j=await api("registro",{nombre:f.nombre.value.trim(),telefono:f.telefono.value.trim(),email:f.email.value.trim(),clave:f.clave.value,web:f.web.value});
+    const j=await api("registro",{nombre:f.nombre.value.trim(),telefono:f.telefono.value.trim(),email:f.email.value.trim(),clave:f.clave.value,web:f.hp_trampa.value});
     if(j.ok) return terminar(j);
     er.textContent=msgError(j); b.disabled=false;
   });

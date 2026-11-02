@@ -120,7 +120,7 @@ function paso1(){
   f.append(el("h2",{style:"margin:0"},"1. Tus datos"));
   if(!getSes()) f.append(el("p",{class:"mu",style:"margin:0;font-size:14px"},"¿Ya tienes cuenta? ",el("a",{href:"cuenta.html?volver=carrito"},"Inicia sesión")," para completar tus datos automáticamente."));
   f.append(lN,lR,lT,lE,
-    el("input",{class:"hp",name:"web",tabindex:"-1",autocomplete:"off","aria-hidden":"true",oninput:e=>{D.web=e.target.value}}),
+    el("input",{class:"hp",name:"hp_trampa",tabindex:"-1",autocomplete:"off","data-lpignore":"true","data-1p-ignore":"true","aria-hidden":"true",oninput:e=>{D.web=e.target.value}}),
     el("button",{class:"btn fill",type:"submit"},"Continuar a la entrega"));
   f.addEventListener("submit",e=>{
     e.preventDefault();
@@ -189,7 +189,7 @@ function paso3(){
 }
 
 async function enviar(e){
-  e.preventDefault(); if(D.web) return;
+  e.preventDefault(); if(D.web){ $("ped-e").textContent="No pudimos enviar el pedido. Recarga la página (Ctrl+F5) e intenta de nuevo."; return; }
   $("ped-s").disabled=true; $("ped-e").textContent="Enviando…";
   const s=getSes(), T=totales();
   const d={items:lines.map(l=>({id:l.id,nombre:l.nombre,qty:l.qty,precio:l.precio})),nombre:D.nombre.trim(),rut:D.rut,telefono:D.telefono.trim(),email:D.email.trim(),
