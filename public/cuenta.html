@@ -42,14 +42,12 @@ function vistaAcceso(){
   const v=$("vista"); v.replaceChildren();
   const box=el("div",{class:"narrow"});
   if(!CONFIG.ORDERS_URL) box.append(el("p",{class:"box"},"Las cuentas estarán disponibles cuando se conecte el sistema de pedidos. Mientras tanto puedes comprar sin cuenta."));
-  const tabs=el("div",{class:"tabs",role:"tablist"});
-  const bL=el("button",{type:"button",role:"tab","aria-selected":"true"},"Iniciar sesión");
-  const bR=el("button",{type:"button",role:"tab","aria-selected":"false"},"Crear cuenta");
-  tabs.append(bL,bR);
-  const fL=formLogin(), fR=formRegistro(); fR.hidden=true;
-  const sel=l=>{bL.setAttribute("aria-selected",l);bR.setAttribute("aria-selected",!l);fL.hidden=!l;fR.hidden=l};
-  bL.onclick=()=>sel(true); bR.onclick=()=>sel(false);
-  box.append(tabs,fL,fR,el("p",{class:"mu",style:"font-size:14px;margin-top:22px"},"¿Solo quieres saber cómo va tu pedido? No necesitas cuenta: usa ",el("a",{href:"seguimiento.html"},"Seguimiento")," con tu código y teléfono."));
+  box.append(el("p",{class:"mu",style:"margin:0 0 18px"},"Ingresa tu correo y te enviamos un código para entrar. Sin contraseñas."));
+  const f1=formCorreo(), f2=el("div",{});
+  f2.hidden=true;
+  const mostrarCodigo=email=>{ f1.hidden=true; f2.hidden=false; f2.replaceChildren(formCodigo(email,()=>{f2.hidden=true;f1.hidden=false;f1.email.focus();})); f2.querySelector("input[name=codigo]").focus(); };
+  f1.alEnviar=mostrarCodigo;
+  box.append(f1,f2,el("p",{class:"mu",style:"font-size:14px;margin-top:22px"},"¿Solo quieres saber cómo va tu pedido? No necesitas cuenta: usa ",el("a",{href:"seguimiento.html"},"Seguimiento")," con tu código de pedido."));
   v.append(box);
 }
 
@@ -58,46 +56,71 @@ function terminar(j){
   location.href = VOLVER ? "carrito.html" : "cuenta.html";
 }
 
-function formLogin(){
+function formCorreo(){
   const f=el("form",{class:"fm"},
-    el("label",{},"Correo",el("input",{name:"email",type:"email",required:"",maxlength:"120",autocomplete:"username"})),
-    el("label",{},"Contraseña",el("input",{name:"clave",type:"password",required:"",maxlength:"100",autocomplete:"current-password"})),
-    el("button",{class:"btn fill",type:"submit"},"Entrar"),
+    el("label",{},"Correo",el("input",{name:"email",type:"email",required:"",maxlength:"120",autocomplete:"email",inputmode:"email"})),
+    el("input",{class:"hp",name:"hp_trampa",tabindex:"-1",autocomplete:"off","data-lpignore":"true","data-1p-ignore":"true","aria-hidden":"true"}),
+    el("button",{class:"btn fill",type:"submit"},"Continuar"),
     el("p",{class:"err",role:"alert"}),
-    el("p",{class:"mu",style:"font-size:13px;margin:0"},"¿Olvidaste tu contraseña? Escríbenos por ",el("a",{href:CONFIG.INSTAGRAM_DM,target:"_blank",rel:"noopener"},"Instagram")," y la restablecemos."));
+    el("p",{class:"mu",style:"font-size:13px;margin:0"},"Al continuar aceptas el tratamiento de tus datos según la ",el("a",{href:"privacidad.html",target:"_blank"},"política de privacidad"),". Si no tienes cuenta, la creamos automáticamente."));
   f.addEventListener("submit",async e=>{
-    e.preventDefault(); const er=f.querySelector(".err"), b=f.querySelector("button"); b.disabled=true; er.textContent="Entrando…";
-    const j=await api("login",{email:f.email.value.trim(),clave:f.clave.value});
-    if(j.ok) return terminar(j);
-    er.textContent=msgError(j); b.disabled=false;
+    e.preventDefault(); if(f.hp_trampa.value) return;
+    const er=f.querySelector(".err"), b=f.querySelector("button"), email=f.email.value.trim().toLowerCase();
+    b.disabled=true; er.textContent="Enviando código…";
+    const j=await api("pedir_codigo",{email,web:f.hp_trampa.value});
+    b.disabled=false;
+    if(j.ok){ er.textContent=""; return f.alEnviar(email); }
+    er.textContent=msgError(j);
   });
   return f;
 }
 
-function formRegistro(){
-  const f=el("form",{class:"fm"},
-    el("label",{},"Nombre",el("input",{name:"nombre",required:"",maxlength:"80",autocomplete:"name"})),
-    el("label",{},"Teléfono (WhatsApp)",el("input",{name:"telefono",type:"tel",required:"",maxlength:"20",autocomplete:"tel",placeholder:"+56 9 1234 5678"})),
-    el("label",{},"Correo",el("input",{name:"email",type:"email",required:"",maxlength:"120",autocomplete:"email"})),
-    el("label",{},"Contraseña (mínimo 8 caracteres)",el("input",{name:"clave",type:"password",required:"",minlength:"8",maxlength:"100",autocomplete:"new-password"})),
-    el("input",{class:"hp",name:"hp_trampa",tabindex:"-1",autocomplete:"off","data-lpignore":"true","data-1p-ignore":"true","aria-hidden":"true"}),
-    el("label",{class:"ck"},el("input",{type:"checkbox",required:""}),el("span",{},"Acepto el tratamiento de mis datos según la ",el("a",{href:"privacidad.html",target:"_blank"},"política de privacidad"),".")),
-    el("button",{class:"btn fill",type:"submit"},"Crear cuenta"),
+function formCodigo(email,volver){
+  const er=el("p",{class:"err",role:"alert"}), info=el("p",{class:"mu",style:"margin:0"},"Enviamos un código de 6 dígitos a ",el("b",{},email),". Revisa también la carpeta de spam. Vale por 10 minutos.");
+  const inp=el("input",{name:"codigo",inputmode:"numeric",pattern:"[0-9]*",maxlength:"6",required:"",autocomplete:"one-time-code",placeholder:"000000","aria-label":"Código de 6 dígitos",style:"font-size:26px;letter-spacing:10px;text-align:center"});
+  const btn=el("button",{class:"btn fill",type:"submit"},"Entrar");
+  const re=el("button",{class:"btn",type:"button"},"Reenviar código");
+  const cambiar=el("button",{class:"btn",type:"button",onclick:volver},"Cambiar correo");
+  const f=el("form",{class:"fm"},info,el("label",{},"Código",inp),btn,er,el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},re,cambiar));
+  let enviando=false;
+  async function verificar(){
+    if(enviando) return; const codigo=inp.value.replace(/\D/g,""); if(codigo.length!==6) return;
+    enviando=true; btn.disabled=true; er.textContent="Verificando…";
+    const j=await api("verificar_codigo",{email,codigo});
+    if(j.ok) return terminar(j);
+    er.textContent=msgError(j); btn.disabled=false; enviando=false; inp.select();
+  }
+  inp.addEventListener("input",()=>{ inp.value=inp.value.replace(/\D/g,"").slice(0,6); if(inp.value.length===6) verificar(); });
+  f.addEventListener("submit",e=>{ e.preventDefault(); verificar(); });
+  let t=0, tm;
+  function espera(seg){ t=seg; re.disabled=true; clearInterval(tm); tm=setInterval(()=>{ t--; if(t<=0){ clearInterval(tm); re.disabled=false; re.textContent="Reenviar código"; } else re.textContent="Reenviar en "+t+" s"; },1000); re.textContent="Reenviar en "+t+" s"; }
+  re.onclick=async()=>{ re.disabled=true; er.textContent="Reenviando…"; const j=await api("pedir_codigo",{email}); if(j.ok){ er.textContent="Te enviamos un código nuevo."; inp.value=""; espera(30); } else { er.textContent=msgError(j); re.disabled=false; } };
+  espera(30);
+  return f;
+}
+
+function formDatos(u){
+  const f=el("form",{class:"fm narrow",style:"margin:18px 0 8px"},
+    el("h2",{style:"margin:0"},"Tus datos"),
+    el("p",{class:"mu",style:"margin:0;font-size:14px"},"Guárdalos una vez y los usamos para completar tus compras más rápido."),
+    el("label",{},"Nombre",el("input",{name:"nombre",required:"",maxlength:"80",autocomplete:"name",value:u.nombre||""})),
+    el("label",{},"Teléfono (WhatsApp)",el("input",{name:"telefono",type:"tel",required:"",maxlength:"20",autocomplete:"tel",placeholder:"+56 9 1234 5678",value:u.telefono||""})),
+    el("button",{class:"btn fill",type:"submit"},"Guardar"),
     el("p",{class:"err",role:"alert"}));
   f.addEventListener("submit",async e=>{
-    e.preventDefault(); if(f.hp_trampa.value) return;
-    const er=f.querySelector(".err"), b=f.querySelector("button"); b.disabled=true; er.textContent="Creando cuenta…";
-    const j=await api("registro",{nombre:f.nombre.value.trim(),telefono:f.telefono.value.trim(),email:f.email.value.trim(),clave:f.clave.value,web:f.hp_trampa.value});
-    if(j.ok) return terminar(j);
+    e.preventDefault(); const er=f.querySelector(".err"), b=f.querySelector("button"), s=getSes(); b.disabled=true; er.textContent="Guardando…";
+    const j=await api("perfil_guardar",{token:s&&s.token,nombre:f.nombre.value.trim(),telefono:f.telefono.value.trim()});
+    if(j.ok){ setSes(Object.assign({},s,j.usuario)); location.reload(); return; }
     er.textContent=msgError(j); b.disabled=false;
   });
   return f;
 }
 
 function vistaCuenta(j){
-  const u=j.usuario; $("ttl").textContent="Hola, "+(u.nombre||"").split(" ")[0];
+  const u=j.usuario; $("ttl").textContent=u.nombre?"Hola, "+u.nombre.split(" ")[0]:"Mi cuenta";
   const v=$("vista"); v.replaceChildren();
-  v.append(el("p",{class:"mu"},u.email+" · "+u.telefono),
+  v.append(el("p",{class:"mu"},[u.email,u.telefono].filter(Boolean).join(" · ")),
+    (!u.nombre||!u.telefono)?formDatos(u):null,
     el("div",{style:"margin:14px 0 30px"},el("button",{class:"btn",type:"button",onclick:()=>{clearSes();location.href="index.html"}},"Cerrar sesión")),
     el("h2",{},"Mis pedidos"));
   if(!j.pedidos.length){ v.append(el("p",{class:"msg"},"Aún no tienes pedidos asociados a tu correo. ",el("a",{href:"index.html#catalogo"},"Ver el catálogo"))); return; }

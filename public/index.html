@@ -160,7 +160,7 @@ $("about").addEventListener("click",e=>{if(e.target===$("about"))$("about").clos
 const hero=document.querySelector(".hero");
 $("ver-cat").addEventListener("click",e=>{e.preventDefault();hero.classList.add("collapsed")});
 document.querySelector(".brand").addEventListener("click",e=>{e.preventDefault();hero.classList.remove("collapsed");window.scrollTo({top:0,behavior:"smooth"})});
-{ const s=getSes(); if(s) $("nav-cuenta").textContent="Hola, "+(s.nombre||"").split(" ")[0]; }
+{ const s=getSes(); if(s&&s.nombre) $("nav-cuenta").textContent="Hola, "+s.nombre.split(" ")[0]; }
 actualizarBadge();
 cargar();
 </script>

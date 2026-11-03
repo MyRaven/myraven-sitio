@@ -81,10 +81,11 @@ async function api(accion, datos){
 const ERRORES = {
   sin_backend:"Esta función estará disponible cuando se conecte el sistema de pedidos.",
   red:"No pudimos conectar. Revisa tu internet e intenta de nuevo.",
-  datos:"Revisa los datos ingresados.", existe:"No se pudo crear la cuenta. Si ya tienes una, inicia sesión.",
-  credenciales:"Correo o contraseña incorrectos.", bloqueado:"Demasiados intentos. Espera unos minutos e intenta de nuevo.",
+  datos:"Revisa los datos ingresados.", 
+  codigo:"Código incorrecto. Revísalo e intenta de nuevo.", codigo_vencido:"El código venció o no existe. Pide uno nuevo.",
+  envio:"No pudimos enviar el correo. Revisa que esté bien escrito e intenta de nuevo.", bloqueado:"Demasiados intentos. Pide un código nuevo en unos minutos.",
   sesion:"Tu sesión expiró. Vuelve a iniciar sesión.", no_encontrado:"No encontramos un pedido con ese código.",
-  limite:"Has enviado muchas solicitudes. Intenta más tarde.", clave_corta:"La contraseña debe tener al menos 8 caracteres."
+  limite:"Has enviado muchas solicitudes. Intenta más tarde."
 };
 const msgError = j => ERRORES[(j&&j.error)||"red"] || "Ocurrió un error. Intenta de nuevo.";
 
@@ -114,7 +115,7 @@ function montarCabecera(){
     el("nav",{},
       el("a",{href:"index.html#catalogo"},"Catálogo"),
       el("a",{href:"seguimiento.html"},"Seguimiento"),
-      el("a",{href:"cuenta.html"},s?("Hola, "+(s.nombre||"").split(" ")[0]):"Mi cuenta"),
+      el("a",{href:"cuenta.html"},s&&s.nombre?("Hola, "+s.nombre.split(" ")[0]):"Mi cuenta"),
       el("a",{href:"carrito.html","data-cart":""},"Carrito"))));
   actualizarBadge();
 }

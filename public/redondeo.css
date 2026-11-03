@@ -14,3 +14,5 @@
 dialog,dialog.about,dialog.lb{border-radius:calc(var(--r) + 4px)}
 dialog.lb{border-radius:0}
 #toast{border-radius:var(--r)}
+
+[hidden]{display:none!important}
